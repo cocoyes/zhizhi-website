@@ -1,108 +1,188 @@
-# vinext-starter
+# 知枝（Zhizhi）
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+知枝是一款面向日常生活的 AI 助手。本仓库包含知枝官网、产品下载页、知识指南、隐私政策和用户协议。
 
-## Prerequisites
+项目使用 Next.js App Router、React 19、vinext 和 Vite 构建，同时支持：
 
-- Node.js `>=22.13.0`
-- Linux with `flock`, `curl`, and GNU `timeout`
+- Cloudflare Worker / OpenAI Sites 部署
+- Node.js standalone + PM2 自托管部署
+- 服务端渲染和静态预生成
+- sitemap、robots、canonical 和结构化数据等 SEO 能力
 
-## Sites Lifecycle
+## 环境要求
 
-The Sites lifecycle CLI runs the locked dependency install before returning this checkout. Edit the source under `app/`, then checkpoint when a coherent milestone is ready to inspect or share. The remote Sites builder runs `npm run build` against the pushed commit. Do not repeat install or build as a normal pre-checkpoint step.
+- Node.js `>= 22.13.0`
+- npm
+- Cloudflare/Sites 构建需要 Linux、WSL2 或带有 Bash、GNU `timeout` 的 CI 环境
+- VPS 部署建议使用 Linux，并安装 PM2 和 Nginx
 
-This starter does not use `wrangler.jsonc`.
+## 本地开发
 
-`install:ci` is intentionally a single, non-retrying `npm ci`. It refuses a concurrent install for the same project, consumes a matching image-seeded npm cache with `--prefer-offline` while retaining registry fallback for a missing cache object, otherwise downloads and verifies the complete vinext tarball recorded in `package-lock.json`, limits npm to one socket, and terminates a stalled install. `build` applies a short timeout and then validates the Sites artifact. These helpers target Linux and use GNU `timeout`; they are not native macOS scripts.
+安装依赖：
 
-Scripts that need writable project-scoped home, npm, XDG, and temporary paths use `scripts/sites-env.sh`. The `dev` and `start` scripts honor the caller's runtime environment and keep Wrangler logs inside the checkout. The generated `.sites-runtime/` directory is disposable and ignored by Git.
+```bash
+npm ci
+```
 
-## Included Shape
+启动开发环境：
 
-- edit site code under `app/`
-- `app/chatgpt-auth.ts` provides optional dispatch-owned ChatGPT sign-in helpers
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/index.ts` reads the D1 binding from the Cloudflare Worker environment
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
+```bash
+npm run dev
+```
 
-## Workspace Auth Headers
+## 常用命令
 
-OpenAI workspace sites can read the current user's email from
-`oai-authenticated-user-email`.
+| 命令 | 用途 |
+| --- | --- |
+| `npm run dev` | 启动本地开发服务 |
+| `npm run build` | 构建 Cloudflare/Sites Worker 版本 |
+| `npm run build:node` | 构建 VPS/PM2 使用的 Node standalone 版本 |
+| `npm run start` | 本地启动 Cloudflare/Vinext 生产预览 |
+| `npm run start:node` | 启动已经构建的 Node standalone 服务 |
+| `npm test` | 构建并检查页面渲染及 SEO metadata |
+| `npm run lint` | 执行代码检查 |
 
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
+## VPS + PM2 部署
 
-Treat the full name as optional and fall back to email when it is absent:
+### 1. 本地构建
 
-```tsx
-import { headers } from "next/headers";
+建议在 Linux、WSL2 或与服务器环境一致的 Docker 容器中构建，避免 Windows 与 Linux 的原生依赖不兼容。
 
-export default async function Home() {
-  const requestHeaders = await headers();
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
+```bash
+npm ci
+npm run build:node
+```
 
-  const displayName = fullName ?? email;
-  // ...
+构建成功后应生成：
+
+```text
+dist/standalone/server.js
+```
+
+如果没有生成该文件，不要上传不完整的产物，应先检查构建错误。
+
+### 2. 打包上传
+
+```bash
+tar -czf zhizhi-release.tar.gz \
+  dist/standalone \
+  public \
+  ecosystem.config.cjs
+```
+
+将 `zhizhi-release.tar.gz` 上传到服务器。不需要上传源码和根目录的 `node_modules`。
+
+### 3. 服务器解压
+
+```bash
+sudo mkdir -p /var/www/zhizhi
+sudo tar -xzf zhizhi-release.tar.gz -C /var/www/zhizhi
+sudo chown -R "$USER":"$USER" /var/www/zhizhi
+cd /var/www/zhizhi
+```
+
+### 4. PM2 启动
+
+```bash
+pm2 start ecosystem.config.cjs
+pm2 save
+pm2 startup
+```
+
+应用默认监听 `127.0.0.1:3000`。
+
+查看运行状态和日志：
+
+```bash
+pm2 status
+pm2 logs zhizhi
+```
+
+更新版本时，覆盖服务器上的部署产物，然后执行：
+
+```bash
+cd /var/www/zhizhi
+pm2 reload ecosystem.config.cjs --update-env
+```
+
+### 5. Nginx 反向代理
+
+示例配置：
+
+```nginx
+server {
+    listen 80;
+    server_name zhizhi.deepyou.top;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
 }
 ```
 
-## Optional Dispatch-Owned ChatGPT Sign-In
+配置完成后，为正式域名启用 HTTPS。
 
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
+## Cloudflare / Sites 部署
 
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
+项目默认的 `npm run build` 会生成 Cloudflare Worker 兼容产物：
 
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
+```bash
+npm ci
+npm run build
+```
 
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
+主要产物包括：
 
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
+```text
+dist/server/index.js
+dist/.openai/hosting.json
+```
 
-## Diagnostic Commands
+Cloudflare/Sites 构建和 Node standalone 构建互相独立：
 
-- `npm run install:ci`: perform the one bounded lockfile install
-- `npm run dev`: start the Vite/Vinext development server
-- `npm run build`: build and validate the deployable Sites artifact
-- `npm run start`: start the built Vinext application
-- `npm test`: build, validate, and verify the rendered development-preview metadata
-- `npm run validate:artifact`: recheck an existing artifact's manifest and ESM `default.fetch` export
-- `npm run db:generate`: generate Drizzle migrations after schema changes
+- 发布到 Cloudflare/Sites 使用 `npm run build`
+- 发布到自己的 VPS 使用 `npm run build:node`
+- 不要把 Cloudflare Worker 的 `dist/server/index.js` 直接交给 PM2 启动
 
-Use build and validation commands for targeted diagnosis after a remote failure, not as part of the normal checkpoint path.
+## SEO
 
-The timeout defaults can be overridden for a controlled canary with `SITES_INSTALL_TIMEOUT`, `SITES_INSTALL_KILL_AFTER`, `SITES_BUILD_TIMEOUT`, and `SITES_BUILD_KILL_AFTER`. A timeout fails the command; the helpers never retry an unchanged install or build.
+项目目前包含以下 SEO 能力：
 
-## Learn More
+- App Router 服务端渲染
+- 指南文章静态参数生成
+- 页面级 title 和 description
+- canonical 地址
+- Open Graph metadata
+- `robots.txt`
+- `sitemap.xml`
+- Article、FAQPage 和 SoftwareApplication 结构化数据
 
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+正式上线后建议检查：
+
+```bash
+curl -I https://zhizhi.deepyou.top/
+curl -I https://zhizhi.deepyou.top/robots.txt
+curl -I https://zhizhi.deepyou.top/sitemap.xml
+```
+
+还应确认页面 HTML 源代码中能够直接看到标题、描述和正文，并将 sitemap 提交到对应的站长平台。
+
+## 项目目录
+
+```text
+app/                    页面、路由和 SEO metadata
+public/                 图片及静态资源
+worker/                 Cloudflare Worker 入口
+scripts/                构建和校验脚本
+vite.config.ts          Cloudflare/Sites 构建配置
+vite.node.config.ts     Node standalone 构建配置
+ecosystem.config.cjs    PM2 配置
+.openai/hosting.json    Sites 托管配置
+```
+
+更精简的 VPS 操作说明也可以查看 [DEPLOY-VPS.md](./DEPLOY-VPS.md)。
