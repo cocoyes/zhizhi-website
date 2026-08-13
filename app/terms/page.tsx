@@ -1,0 +1,1 @@
+import Link from"next/link";export default function Page(){return <main className="legal"><Link href="/">← 返回知枝</Link><h1>用户协议</h1><p>更新日期：2026 年 8 月 13 日</p><h2>服务说明</h2><p>知枝提供由人工智能辅助的对话、记录、提醒、信息整理与创作服务。AI 生成内容可能存在不准确之处，不应替代医疗、法律、财务等专业意见。</p><h2>合理使用</h2><p>用户应合法、善意地使用服务，不得利用知枝生成或传播违法、有害或侵犯他人权益的内容。</p></main>}

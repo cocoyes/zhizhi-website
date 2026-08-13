@@ -1,0 +1,1 @@
+import Link from"next/link";export default function Page(){return <main className="legal"><Link href="/">← 返回知枝</Link><h1>隐私政策</h1><p>更新日期：2026 年 8 月 13 日</p><h2>我们重视你的隐私</h2><p>知枝仅在提供对话、记忆、提醒与账户服务所必要的范围内处理信息。正式上线前，本页面将补充完整的数据类型、处理目的、保存期限、用户权利与联系渠道。</p><h2>你的控制权</h2><p>你可以查看、更正或删除由知枝保存的个人资料与记忆，也可以撤回授权或申请注销账户。</p></main>}

@@ -1,0 +1,1 @@
+import type{MetadataRoute}from"next";export default function manifest():MetadataRoute.Manifest{return{name:"知枝｜AI 生活助手",short_name:"知枝",description:"懂你所想，陪你成长",start_url:"/",display:"standalone",background_color:"#ffffff",theme_color:"#087bff",icons:[{src:"/images/zhizhi-icon.png",sizes:"256x256",type:"image/png"}]}}
