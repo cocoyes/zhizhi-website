@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: "zhizhi",
+      name: "zhizhi-web",
       script: "dist/standalone/server.js",
       cwd: __dirname,
       instances: 1,

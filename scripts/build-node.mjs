@@ -1,5 +1,10 @@
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { patchVinextStaticCacheFiles } from "./patch-vinext-static-cache.mjs";
+
+// Vinext 0.0.50 stores path.relative() output as URL cache keys. Normalize the
+// separators so static assets work on Windows while remaining unchanged on Linux.
+await patchVinextStaticCacheFiles();
 
 const vinextCli = fileURLToPath(
   new URL("../node_modules/vinext/dist/cli.js", import.meta.url),
@@ -29,4 +34,7 @@ const exitCode = await new Promise((resolve, reject) => {
 
 if (exitCode !== 0) {
   process.exitCode = exitCode;
+} else {
+  // The standalone bundle contains its own Vinext runtime copy.
+  await patchVinextStaticCacheFiles();
 }

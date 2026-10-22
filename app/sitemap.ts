@@ -1,1 +1,14 @@
-import type{MetadataRoute}from"next";import{guides}from"./guides/data";export default function sitemap():MetadataRoute.Sitemap{const b="https://zhizhi.deepyou.top",routes=["","/download","/guides","/support","/privacy","/terms",...guides.map(x=>`/guides/${x.slug}`)];return routes.map((x,i)=>({url:b+x,lastModified:new Date("2026-09-13"),changeFrequency:i<4?"weekly":"monthly",priority:i===0?1:i<4?.9:.75}))}
+import type { MetadataRoute } from "next";
+import { guides } from "./guides/data";
+
+const siteUrl = "https://deepyou.top";
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  const routes = ["/", "/download", "/guides", "/support", "/privacy", "/terms", ...guides.map((guide) => `/guides/${guide.slug}`)];
+  return routes.map((route, index) => ({
+    url: `${siteUrl}${route === "/" ? "" : route}`,
+    lastModified: new Date("2026-10-22"),
+    changeFrequency: index < 4 ? "weekly" : "monthly",
+    priority: index === 0 ? 1 : index < 4 ? 0.9 : 0.75,
+  }));
+}

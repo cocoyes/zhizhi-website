@@ -7,10 +7,11 @@
   },
   "scripts": {
     "install:ci": "bash scripts/install-ci.sh",
-    "dev": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vite",
+    "postinstall": "node scripts/patch-vinext-static-cache.mjs",
+    "dev": "vite --port 3000",
     "build": "bash scripts/build-verified.sh",
     "build:node": "node scripts/build-node.mjs",
-    "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
+    "start": "vinext start",
     "start:node": "node dist/standalone/server.js",
     "test": "npm run build && node --test tests/rendered-html.test.mjs",
     "validate:artifact": "bash scripts/validate-artifact.sh",

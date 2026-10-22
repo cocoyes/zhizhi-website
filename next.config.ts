@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
+import { imageDeviceSizes, imageSizes } from "./config/image-widths";
 
 const nextConfig: NextConfig = {
+  images: {
+    deviceSizes: imageDeviceSizes,
+    imageSizes,
+  },
   // The Cloudflare/Sites build keeps its existing Worker output. The separate
   // `npm run build:node` entry sets this flag and produces a self-hostable
   // Node.js bundle for PM2/Docker/VPS deployments.

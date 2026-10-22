@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { openGraphImage } from "../metadata";
 
 export const metadata: Metadata = {
   title: "技术支持",
   description: "知枝技术支持：获取登录、账号注销与问题反馈帮助，或联系知枝支持团队。",
   alternates: { canonical: "/support" },
+  openGraph: { url: "https://deepyou.top/support", ...openGraphImage },
 };
 
 const faqs = [
@@ -70,18 +72,18 @@ export default function SupportPage() {
             <p>清晰了解我们如何保护你的信息，以及使用知枝时双方共同遵守的约定。</p>
           </div>
           <div className="support-link-grid">
-            <Link href="/privacy">
+            <a href="https://zhizhi.deepyou.top/legal/privacy-policy-zh-CN-v1.0.0.html">
               <small>PRIVACY</small>
               <h3>隐私政策</h3>
               <p>了解个人信息的处理方式，以及你拥有的管理与控制权。</p>
               <b>查看隐私政策　→</b>
-            </Link>
-            <Link href="/terms">
+            </a>
+            <a href="https://zhizhi.deepyou.top/legal/user-agreement-zh-CN-v1.0.0.html">
               <small>TERMS</small>
               <h3>用户协议</h3>
               <p>了解知枝的服务内容、使用规则与重要注意事项。</p>
               <b>查看用户协议　→</b>
-            </Link>
+            </a>
           </div>
         </section>
 
@@ -128,8 +130,8 @@ export default function SupportPage() {
         <div>
           <b>支持</b>
           <a href="mailto:support@deepyou.top">联系我们</a>
-          <Link href="/privacy">隐私政策</Link>
-          <Link href="/terms">用户协议</Link>
+          <a href="https://zhizhi.deepyou.top/legal/privacy-policy-zh-CN-v1.0.0.html">隐私政策</a>
+          <a href="https://zhizhi.deepyou.top/legal/user-agreement-zh-CN-v1.0.0.html">用户协议</a>
         </div>
         <p>© 2026 知枝 Zhizhi · 粤ICP备2025432144号-2</p>
       </footer>

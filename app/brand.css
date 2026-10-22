@@ -55,3 +55,11 @@ body{background:#fffaf1}.nav{height:90px}.button{border-radius:999px!important;p
 .support-bottom>a{padding:15px 24px;border-radius:999px;background:#fff;color:var(--brand-deep);font-size:13px;font-weight:750;white-space:nowrap}
 .support-footer{margin-top:0}
 @media(max-width:800px){.support-hero{min-height:auto;padding:55px 20px 75px;grid-template-columns:1fr;gap:50px}.support-hero h1{font-size:45px}.support-hero-copy>p:not(.eyebrow){font-size:15px}.support-email strong{font-size:15px}.support-hero-art{min-height:330px}.support-orbit-one{width:210px;height:210px}.support-orbit-two{width:280px;height:280px}.support-mark{width:115px;height:115px;font-size:38px}.support-links,.support-faq{padding:75px 20px;grid-template-columns:1fr;gap:35px}.support-links h2,.support-faq h2,.support-bottom h2{font-size:36px}.support-link-grid{grid-template-columns:1fr}.support-link-grid>a{min-height:250px}.support-faq-list summary{grid-template-columns:36px 1fr auto;font-size:15px}.support-faq-list details p{margin-left:36px;margin-right:10px}.support-bottom{margin:70px 20px;padding:38px 28px;display:block;border-radius:28px}.support-bottom>a{display:inline-block;margin-top:28px}}
+
+/* Keep the site's warm, domestic visual language without repeating one scene. */
+.visual{background-image:url('/images/hero-companion.webp')}
+.scenes:before{background-image:url('/images/scenes-reminder.webp')}
+
+/* A quieter surface rhythm keeps the brand soft without turning every block into a pill. */
+.features article,.posts>a,.support-link-grid>a{border-radius:18px}
+.support-email{border-radius:14px}

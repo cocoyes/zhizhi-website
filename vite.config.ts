@@ -14,6 +14,10 @@ const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
 const localBindingConfig = {
   main: "./worker/index.ts",
   compatibility_flags: ["nodejs_compat"],
+  // The custom image optimizer reads local files through env.ASSETS. Vite
+  // serves public/ itself, but the binding still needs to be declared so the
+  // Worker can fetch the source image during local development.
+  assets: { binding: "ASSETS" },
   d1_databases: d1
     ? [
         {
